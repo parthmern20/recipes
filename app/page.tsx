@@ -124,7 +124,7 @@ const availableRecipes = recipes.filter(r =>
               <Baby className="w-8 h-8" />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold">ગર્ભાવસ્થા આરોગ્ય યોજના</h1>
+              <h1 className="text-2xl md:text-3xl font-bold">Preg. Diet Plan</h1>
               <p className="text-green-100 text-sm">Pregnancy Health Plan - Diabetes & BP Management</p>
             </div>
           </div>
