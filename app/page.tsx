@@ -341,7 +341,7 @@ const availableRecipes = recipes.filter(r =>
                     key={meal.type}
                     onClick={() => setSelectedMealType(meal.type)}
                     className={`p-4 rounded-xl transition-all ${selectedMealType === meal.type
-                        ? `bg-${meal.color}-500 text-white shadow-lg scale-105`
+                        ? `bg-green-500 text-white shadow-lg scale-105`
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                   >
@@ -366,7 +366,7 @@ const availableRecipes = recipes.filter(r =>
       onClick={() =>
         toggleRecipeForMeal(selectedDay, selectedMealType, recipe.id)
       }
-      className={`p-4 rounded-xl border transition ${
+      className={`p-4 rounded-xl border transition mr-2 mb-2 ${
         isSelected
           ? 'bg-green-500 text-white'
           : 'bg-gray-100 text-gray-700'
