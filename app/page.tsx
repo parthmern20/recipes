@@ -26,6 +26,15 @@ type RecipeCategory =
   | 'drink'
   | 'sweet';
 
+  type DayMealPlan = {
+  breakfast: string[];
+  lunch: string[];
+  dinner: string[];
+};
+
+type WeeklyPlan = DayMealPlan[];
+
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [selectedWeek, setSelectedWeek] = useState(14);
@@ -35,9 +44,28 @@ export default function Home() {
   const [showRecipeModal, setShowRecipeModal] = useState(false);
   const [selectedCategory, setSelectedCategory] =
     useState<RecipeCategory>('all');
+  const [weeklyPlan, setWeeklyPlan] = useState<WeeklyPlan>(() =>
+  weeklyMealPlan.map(day => ({
+    breakfast: [...day.breakfast],
+    lunch: [...day.lunch],
+    dinner: [...day.dinner],
+  }))
+);
+
+const currentDayPlan = weeklyPlan[selectedDay];
+
+const getMealRecipes = (mealType: MealType) => {
+  return currentDayPlan[mealType]
+    .map(id => getRecipeById(id))
+    .filter(Boolean) as Recipe[];
+};
+
+const availableRecipes = recipes.filter(r =>
+  r.mealType.includes(selectedMealType)
+);
 
   const currentBabyInfo = babyDevelopment.find(b => b.week === selectedWeek) || babyDevelopment[0];
-  const currentDayPlan = weeklyMealPlan[selectedDay];
+  // const currentDayPlan = weeklyMealPlan[selectedDay];
 
   const filteredRecipes =
     selectedCategory === 'all'
@@ -45,10 +73,10 @@ export default function Home() {
       : recipes.filter(r => r.category === selectedCategory);
 
 
-  const getMealRecipes = (mealType: MealType) => {
-    const recipeIds = currentDayPlan[mealType];
-    return recipeIds.map(id => getRecipeById(id)).filter(Boolean) as Recipe[];
-  };
+  // const getMealRecipes = (mealType: MealType) => {
+  //   const recipeIds = currentDayPlan[mealType];
+  //   return recipeIds.map(id => getRecipeById(id)).filter(Boolean) as Recipe[];
+  // };
 
   const openRecipeModal = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
@@ -59,6 +87,32 @@ export default function Home() {
     setShowRecipeModal(false);
     setSelectedRecipe(null);
   };
+
+  const toggleRecipeForMeal = (
+  dayIndex: number,
+  mealType: MealType,
+  recipeId: string
+) => {
+  setWeeklyPlan(prev => {
+    const updated = prev.map(day => ({
+      breakfast: [...day.breakfast],
+      lunch: [...day.lunch],
+      dinner: [...day.dinner],
+    }));
+
+    const mealArray = updated[dayIndex][mealType];
+
+    if (mealArray.includes(recipeId)) {
+      updated[dayIndex][mealType] = mealArray.filter(
+        id => id !== recipeId
+      );
+    } else {
+      updated[dayIndex][mealType] = [...mealArray, recipeId];
+    }
+
+    return updated;
+  });
+};
 
   return (
     <div className="min-h-screen">
@@ -302,33 +356,27 @@ export default function Home() {
 
             {/* Recipe Options */}
             <div className="card">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">
-                🥘 {currentDayPlan.day} - {selectedMealType === 'breakfast' ? 'નાસ્તો' : selectedMealType === 'lunch' ? 'બપોર' : 'રાત્રે'} ની રેસીપી
-              </h2>
-              <div className="space-y-3">
-                {getMealRecipes(selectedMealType).map((recipe) => (
-                  <button
-                    key={recipe.id}
-                    onClick={() => openRecipeModal(recipe)}
-                    className="w-full text-left p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl hover:shadow-md transition-all group"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-bold text-gray-800 group-hover:text-green-700">
-                          {recipe.name}
-                        </h3>
-                        <p className="text-sm text-gray-500">{recipe.english}</p>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          <span className="badge badge-green">⏱️ {recipe.time} મિનિટ</span>
-                          <span className="badge badge-blue">🔥 {recipe.nutrition.calories} cal</span>
-                          <span className="badge badge-amber">💪 {recipe.nutrition.protein}g protein</span>
-                        </div>
-                      </div>
-                      <ChevronRight className="w-6 h-6 text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all" />
-                    </div>
-                  </button>
-                ))}
-              </div>
+              {availableRecipes.map(recipe => {
+  const isSelected =
+    currentDayPlan[selectedMealType].includes(recipe.id);
+
+  return (
+    <button
+      key={recipe.id}
+      onClick={() =>
+        toggleRecipeForMeal(selectedDay, selectedMealType, recipe.id)
+      }
+      className={`p-4 rounded-xl border transition ${
+        isSelected
+          ? 'bg-green-500 text-white'
+          : 'bg-gray-100 text-gray-700'
+      }`}
+    >
+      <h3 className="font-bold">{recipe.name}</h3>
+      <p className="text-sm">{recipe.english}</p>
+    </button>
+  );
+})}
             </div>
 
             {/* Baby Benefits for Selected Meal */}
